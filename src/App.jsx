@@ -23,7 +23,7 @@ const products = productsFromServer.map(product => {
 
 function prepareProductsForOutput(
   prods,
-  { selectedUser, queryName, selectedCategories, sortField },
+  { selectedUser, queryName, selectedCategories, sortField, sortingOrder },
 ) {
   let prodsCopy = [...prods];
 
@@ -70,6 +70,10 @@ function prepareProductsForOutput(
     }
   }
 
+  if (sortingOrder !== '') {
+    prodsCopy = sortingOrder === 'asc' ? prodsCopy : prodsCopy.reverse();
+  }
+
   return prodsCopy;
 }
 
@@ -78,11 +82,13 @@ export const App = () => {
   const [queryName, setQueryName] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [sortField, setSortField] = useState('');
+  const [sortingOrder, setSortingOrder] = useState('');
   const preparedProducts = prepareProductsForOutput(products, {
     selectedUser,
     queryName,
     selectedCategories,
     sortField,
+    sortingOrder,
   });
 
   const resetAll = () => {
@@ -90,6 +96,7 @@ export const App = () => {
     setSelectedCategories([]);
     setQueryName('');
     setSortField('');
+    setSortingOrder('');
   };
 
   const enableCategory = title => {
@@ -100,6 +107,29 @@ export const App = () => {
     } else {
       setSelectedCategories([...selectedCategories, title]);
     }
+  };
+
+  const setOrdering = column => {
+    if (column !== sortField) {
+      setSortField(column);
+      setSortingOrder('asc');
+
+      return;
+    }
+
+    if (sortingOrder === 'asc') {
+      setSortingOrder('desc');
+
+      return;
+    }
+
+    if (sortingOrder === '') {
+      setSortingOrder('asc');
+
+      return;
+    }
+
+    setSortingOrder('');
   };
 
   return (
@@ -221,9 +251,21 @@ export const App = () => {
                     <th key={column}>
                       <span className="is-flex is-flex-wrap-nowrap">
                         {column}
-                        <a onClick={() => setSortField(column)} href="#/">
+                        <a onClick={() => setOrdering(column)} href="#/">
                           <span className="icon">
-                            <i data-cy="SortIcon" className="fas fa-sort" />
+                            <i
+                              data-cy="SortIcon"
+                              className={classNames('fas', {
+                                'fa-sort':
+                                  sortField !== column || sortingOrder === '',
+                                'fa-sort-up':
+                                  sortingOrder === 'asc' &&
+                                  sortField === column,
+                                'fa-sort-down':
+                                  sortingOrder === 'desc' &&
+                                  sortField === column,
+                              })}
+                            />
                           </span>
                         </a>
                       </span>
