@@ -20,11 +20,17 @@ const products = productsFromServer.map(product => {
   };
 });
 
-function prepareProductsForOutput(prod, { selectedUser }) {
+function prepareProductsForOutput(prod, { selectedUser, queryName }) {
   let prodCopy = [...prod];
 
   if (selectedUser !== 'All') {
     prodCopy = prodCopy.filter(({ user }) => user.name === selectedUser);
+  }
+
+  if (queryName !== '') {
+    prodCopy = prodCopy.filter(({ name }) =>
+      name.toLowerCase().includes(queryName.toLowerCase()),
+    );
   }
 
   return prodCopy;
@@ -32,7 +38,11 @@ function prepareProductsForOutput(prod, { selectedUser }) {
 
 export const App = () => {
   const [selectedUser, setSelectedUser] = useState('All');
-  const preparedProducts = prepareProductsForOutput(products, { selectedUser });
+  const [queryName, setQueryName] = useState('');
+  const preparedProducts = prepareProductsForOutput(products, {
+    selectedUser,
+    queryName,
+  });
 
   return (
     <div className="section">
@@ -74,24 +84,28 @@ export const App = () => {
               <p className="control has-icons-left has-icons-right">
                 <input
                   data-cy="SearchField"
+                  onChange={event => setQueryName(event.target.value)}
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={queryName}
                 />
 
                 <span className="icon is-left">
                   <i className="fas fa-search" aria-hidden="true" />
                 </span>
 
-                <span className="icon is-right">
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
-                </span>
+                {queryName !== '' && (
+                  <span className="icon is-right">
+                    {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                    <button
+                      data-cy="ClearButton"
+                      onClick={() => setQueryName('')}
+                      type="button"
+                      className="delete"
+                    />
+                  </span>
+                )}
               </p>
             </div>
 
