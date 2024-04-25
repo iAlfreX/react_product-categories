@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { useState } from 'react';
 import classNames from 'classnames';
+
 import './App.scss';
 
 import usersFromServer from './api/users';
@@ -22,7 +23,7 @@ const products = productsFromServer.map(product => {
 
 function prepareProductsForOutput(
   prods,
-  { selectedUser, queryName, selectedCategories },
+  { selectedUser, queryName, selectedCategories, sortField },
 ) {
   let prodsCopy = [...prods];
 
@@ -42,6 +43,33 @@ function prepareProductsForOutput(
     );
   }
 
+  if (sortField !== '') {
+    switch (sortField) {
+      case 'ID':
+        prodsCopy.sort((prod1, prod2) => prod1.id - prod2.id);
+        break;
+
+      case 'Product':
+        prodsCopy.sort((prod1, prod2) => prod1.name.localeCompare(prod2.name));
+        break;
+
+      case 'Category':
+        prodsCopy.sort((prod1, prod2) =>
+          prod1.category.title.localeCompare(prod2.category.title),
+        );
+        break;
+
+      case 'User':
+        prodsCopy.sort((prod1, prod2) =>
+          prod1.user.name.localeCompare(prod2.user.name),
+        );
+        break;
+
+      default:
+        break;
+    }
+  }
+
   return prodsCopy;
 }
 
@@ -49,16 +77,19 @@ export const App = () => {
   const [selectedUser, setSelectedUser] = useState('All');
   const [queryName, setQueryName] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [sortField, setSortField] = useState('');
   const preparedProducts = prepareProductsForOutput(products, {
     selectedUser,
     queryName,
     selectedCategories,
+    sortField,
   });
 
   const resetAll = () => {
     setSelectedUser('All');
     setSelectedCategories([]);
     setQueryName('');
+    setSortField('');
   };
 
   const enableCategory = title => {
@@ -186,49 +217,18 @@ export const App = () => {
             >
               <thead>
                 <tr>
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      ID
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort" />
-                        </span>
-                      </a>
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      Product
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort-down" />
-                        </span>
-                      </a>
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      Category
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort-up" />
-                        </span>
-                      </a>
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      User
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort" />
-                        </span>
-                      </a>
-                    </span>
-                  </th>
+                  {['ID', 'Product', 'Category', 'User'].map(column => (
+                    <th key={column}>
+                      <span className="is-flex is-flex-wrap-nowrap">
+                        {column}
+                        <a onClick={() => setSortField(column)} href="#/">
+                          <span className="icon">
+                            <i data-cy="SortIcon" className="fas fa-sort" />
+                          </span>
+                        </a>
+                      </span>
+                    </th>
+                  ))}
                 </tr>
               </thead>
 
